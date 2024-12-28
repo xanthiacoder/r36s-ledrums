@@ -11,7 +11,17 @@ ledAlpha[2] = 0 -- the transparency of 2st led
 ledAlpha[3] = 0 -- the transparency of 3st led
 ledAlpha[4] = 0 -- the transparency of 4st led
 
-local tickChange = clock.tick
+
+local tickChange = clock.tick -- to tell when the tick has changed
+local tockChange = clock.tock -- to tell when the tock has changed
+local tapTempo = clock.time -- init to detect delta to change tempo
+
+-- graphical overlay for this scene's help
+local helpTextOverlay = love.graphics.newImage("bgart/transparent-black-50.png")
+
+
+-- graphic highlight for beat editor
+local beatHighlight = love.graphics.newImage("pic/beat-highlight.png")
 
 local K = {}
 
@@ -19,7 +29,9 @@ local helpText = ""
 
 -- K.init is for loading assets for the scene
 function K.init()
+	-- background to display
 	bgart[401] = love.graphics.newImage("bgart/401-hardcore.jpg")
+	-- help text to appear
 	help[401] = ""
 	sfx[1] = love.audio.newSource("sfx/Hardcore-NoizeHit.wav", "static")
 	sfx[2] = love.audio.newSource("sfx/Hardcore-Snare.wav", "static")
@@ -108,19 +120,35 @@ function love.keypressed( key, scancode, isrepeat )
       -- L-Stick LEFT
       triggerReport = "L-Stick LEFT pressed"
       lstkState[2] = "dn"
+      
+	  -- reduce song's tempo
+	  song.tempo = song.tempo - 1
+      
+      -- skip to exitscreen scene
       if love.keyboard.isScancodeDown("escape") then  -- SELECT + Lstk-LEFT detected
       	scene[999].input() -- change input key-map to 999's
       	scene.current = 999 -- change to exitscreen scene
 		scene.previous = 401
       end
+
    elseif scancode == "down" then
       -- L-Stick DOWN
       triggerReport = "L-Stick DOWN pressed"
       lstkState[3] = "dn"
+      -- tapTempo detection
+	  if (clock.time - tapTempo) > 2 then
+		 -- new attempt to tap tempo detected, recalibrate
+	     tapTempo = clock.time
+	  else
+	     song.tempo = math.floor(60 / (clock.time - tapTempo))
+	     tapTempo = clock.time -- init for the next detection
+	  end
    elseif scancode == "right" then
       -- L-Stick RIGHT
       triggerReport = "L-Stick RIGHT pressed"
       lstkState[4] = "dn"
+	  -- increase song's tempo
+	  song.tempo = song.tempo + 1
    elseif scancode == "l" then
       -- Back L1 pressed
       triggerReport = "Back L1 pressed"
@@ -129,10 +157,6 @@ function love.keypressed( key, scancode, isrepeat )
       -- Back L2 pressed
       triggerReport = "Back L2 pressed"
       bbtnState[2] = "dn"
-      if love.keyboard.isScancodeDown("escape") then  -- SELECT + L2 detected
-	    -- reduce song's tempo
-	    song.tempo = song.tempo - 1
-	  end
    elseif scancode == "r" then
       -- Right R1 pressed
       triggerReport = "Back R1 pressed"
@@ -141,10 +165,6 @@ function love.keypressed( key, scancode, isrepeat )
       -- Right R2 pressed
       triggerReport = "Back R2 pressed"
       bbtnState[4] = "dn"
-      if love.keyboard.isScancodeDown("escape") then  -- SELECT + R2 detected
-	    -- increase song's tempo
-	    song.tempo = song.tempo + 1
-	  end
    elseif scancode == "1" then
       -- L-Stick L3 pressed, edit gptokeyb for L3 = "1"
       triggerReport = "L-Stick L3 pressed"
@@ -273,14 +293,26 @@ end
 
 -- this scene's update for each frame
 function K.update()
+
+	-- make LED fade
 	if ledAlpha[1] > 0 then
 		ledAlpha[1] = ledAlpha[1] - 0.05
 	end
+
+	-- do when tick changes
 	if tickChange ~= clock.tick then
-		-- do when tick changes
-		ledAlpha[1] = 1 -- pulse 1st LED
 		tickChange = clock.tick -- reset for next change to be detected
+		love.audio.stop(sfx[5]) -- stop to re-trigger sound
+		love.audio.play(sfx[5]) -- play hi-hat sound		
+		ledAlpha[1] = 1 -- pulse 1st LED
 	end
+
+	-- do when tock changes
+	if tockChange ~= clock.tock then
+		tockChange = clock.tock -- reset for next change to be detected
+	end
+
+
 end
 
 
@@ -292,29 +324,28 @@ function K.draw()
 	love.graphics.setFont(gameFont)
     if love.keyboard.isScancodeDown("escape") then
     	helpText = help[401]
+		love.graphics.draw(helpTextOverlay, 0, 0) -- draw this scene's helpTextOverlay
+	    love.graphics.printf(helpText, gameFont, 50, 80, 540, "left") -- display help text
 	else
 		helpText = ""
+	    love.graphics.setFont(bigFont)
+		love.graphics.printf(song.tempo, bigFont, 196, 380, 100, "center") -- show tempo
+
+		-- pulse red LED based on tempo
+		love.graphics.setColor(1, 1, 1, ledAlpha[1]) -- test alpha
+		love.graphics.draw(redLed, 75, 380) -- 1st led, red
+--		love.graphics.draw(redLed, 280, 236) -- 2nd led, red
+--		love.graphics.draw(redLed, 340, 236) -- 3rd led, red
+--		love.graphics.draw(redLed, 400, 236) -- 4th led, red
+		love.graphics.setColor(1, 1, 1, 1) -- reset alpha
+
     end
-    love.graphics.printf(helpText, gameFont, 50, 80, 540, "left")
     
-    love.graphics.setFont(bigFont)
-	love.graphics.printf(song.tempo, bigFont, 270, 264, 100, "center")
+	love.graphics.draw(beatHighlight, 13, 72) -- beat highlight at position 1.1
 
 	-- checking on ticks and tocks, to match tempo
 	love.graphics.printf(clock.tick .. "." .. clock.tock, bigFont, 270, 240, 100, "center") -- show ticks
 	
-	-- pulse red LED based on tempo
-	love.graphics.setColor(1, 1, 1, ledAlpha[1]) -- test alpha
-	love.graphics.draw(redLed, 220, 236) -- 1st led, red
---	love.graphics.draw(redLed, 280, 236) -- 2nd led, red
---	love.graphics.draw(redLed, 340, 236) -- 3rd led, red
---	love.graphics.draw(redLed, 400, 236) -- 4th led, red
-	love.graphics.setColor(1, 1, 1, 1) -- reset alpha
-
-    
-    if not(love.keyboard.isDown("escape")) then -- SELECT is not pressed
-		-- show only when SELECT is not pressed
-	end
 
 end
 

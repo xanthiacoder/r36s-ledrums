@@ -54,7 +54,6 @@ scene.previous = 401
 
 -- define local variables here [start]
 
-local helpTextBackDrop = love.graphics.newImage("bgart/transparent-blank.png")
 
 -- define variables here [end]
 
