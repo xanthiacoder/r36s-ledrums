@@ -90,6 +90,12 @@ local helpText = ""
 
 
 local function saveData()
+
+	local i = 1
+	local j = 1
+	local tick = 1
+	local tock = 1
+	
 	-- using LUA IO to write data for universal compatibility
 	local f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-tempo.txt", "w")
 	f:write(seq.loop[1].tempo, "\n")
@@ -97,7 +103,81 @@ local function saveData()
 	f:write(seq.loop[3].tempo, "\n")
 	f:write(seq.loop[4].tempo)
 	f:close()
+
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop1.txt", "w")
+	for j = 1,8 do
+	tick = 1
+	tock = 1
+	for i = 1,16 do
+		f:write(seq.loop[1].track[j].tick[tick].tock[tock])
+		tock = tock + 1
+		if tock == 5 then
+			tick = tick + 1
+			tock = 1
+		end		
+	end -- end writing single track
+	if j < 8 then -- if not the last track
+		f:write("\n") -- go to next line for next track
+	end
+	end -- end writing all tracks
+	f:close()
+
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop2.txt", "w")
+	for j = 1,8 do
+	tick = 1
+	tock = 1
+	for i = 1,16 do
+		f:write(seq.loop[2].track[j].tick[tick].tock[tock])
+		tock = tock + 1
+		if tock == 5 then
+			tick = tick + 1
+			tock = 1
+		end		
+	end -- end writing single track
+	if j < 8 then -- if not the last track
+		f:write("\n") -- go to next line for next track
+	end
+	end -- end writing all tracks
+	f:close()
+
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop3.txt", "w")
+	for j = 1,8 do
+	tick = 1
+	tock = 1
+	for i = 1,16 do
+		f:write(seq.loop[3].track[j].tick[tick].tock[tock])
+		tock = tock + 1
+		if tock == 5 then
+			tick = tick + 1
+			tock = 1
+		end		
+	end -- end writing single track
+	if j < 8 then -- if not the last track
+		f:write("\n") -- go to next line for next track
+	end
+	end -- end writing all tracks
+	f:close()
+
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop4.txt", "w")
+	for j = 1,8 do
+	tick = 1
+	tock = 1
+	for i = 1,16 do
+		f:write(seq.loop[4].track[j].tick[tick].tock[tock])
+		tock = tock + 1
+		if tock == 5 then
+			tick = tick + 1
+			tock = 1
+		end		
+	end -- end writing single track
+	if j < 8 then -- if not the last track
+		f:write("\n") -- go to next line for next track
+	end
+	end -- end writing all tracks
+	f:close()
+
 	game.tooltip = "Scene 401 data saved at " .. math.floor(game.time + love.timer.getTime())
+
 end
 
 
@@ -124,18 +204,108 @@ end
 
 -- K.start is to init anything when scene starts, can be reloaded multiple times
 function K.start()
-	-- read all autosave data
-	local f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-tempo.txt")
 	local i = 1
+	local j = 1
+	local h = 1
+	local tick = 1
+	local tock = 1
+	local track = {}
+	-- read all autosave tempo data
+	local f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-tempo.txt")
+	i = 1
 	for line in f:lines() do
 		seq.loop[i].tempo = line
 		i = i + 1
 	end
 	f:close()
-
 	-- set tempo according to loaded values
 	song.tempo = seq.loop[currentLoop].tempo
-	
+
+	-- read all autosave loop data
+	f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop1.txt")
+	i = 1
+	for line in f:lines() do
+		track[i] = line
+		i = i + 1
+	end
+	f:close()
+
+	for j = 1,8 do -- read 8 tracks
+	tick = 1
+	tock = 1
+	for h = 1,16 do -- read 16 sub-beats
+		seq.loop[1].track[j].tick[tick].tock[tock] = string.sub(track[j], h, h)
+		tock = tock + 1
+		if tock == 5 then
+			tick = tick + 1
+			tock = 1
+		end
+	end -- end read of 16 sub-beats
+	end -- end read of 8 tracks
+
+	f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop2.txt")
+	i = 1
+	for line in f:lines() do
+		track[i] = line
+		i = i + 1
+	end
+	f:close()
+
+	for j = 1,8 do -- read 8 tracks
+	tick = 1
+	tock = 1
+	for h = 1,16 do -- read 16 sub-beats
+		seq.loop[2].track[j].tick[tick].tock[tock] = string.sub(track[j], h, h)
+		tock = tock + 1
+		if tock == 5 then
+			tick = tick + 1
+			tock = 1
+		end
+	end -- end read of 16 sub-beats
+	end -- end read of 8 tracks
+
+	f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop3.txt")
+	i = 1
+	for line in f:lines() do
+		track[i] = line
+		i = i + 1
+	end
+	f:close()
+
+	for j = 1,8 do -- read 8 tracks
+	tick = 1
+	tock = 1
+	for h = 1,16 do -- read 16 sub-beats
+		seq.loop[3].track[j].tick[tick].tock[tock] = string.sub(track[j], h, h)
+		tock = tock + 1
+		if tock == 5 then
+			tick = tick + 1
+			tock = 1
+		end
+	end -- end read of 16 sub-beats
+	end -- end read of 8 tracks
+
+	f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop4.txt")
+	i = 1
+	for line in f:lines() do
+		track[i] = line
+		i = i + 1
+	end
+	f:close()
+
+	for j = 1,8 do -- read 8 tracks
+	tick = 1
+	tock = 1
+	for h = 1,16 do -- read 16 sub-beats
+		seq.loop[4].track[j].tick[tick].tock[tock] = string.sub(track[j], h, h)
+		tock = tock + 1
+		if tock == 5 then
+			tick = tick + 1
+			tock = 1
+		end
+	end -- end read of 16 sub-beats
+	end -- end read of 8 tracks
+
 end
 
 

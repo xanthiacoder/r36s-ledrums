@@ -79,6 +79,58 @@ miscState[6] = ".."
 
 
 
+function restoreDefaults()
+	-- create scene 401 default files for all system types
+	local f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-tempo.txt", "w")
+	f:write(120, "\n")
+	f:write(120, "\n")
+	f:write(120, "\n")
+	f:write(120)
+	f:close()
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop1.txt", "w")
+	f:write("7---------------\n")
+	f:write("-7--------------\n")
+	f:write("--7-------------\n")
+	f:write("---7------------\n")
+	f:write("----7-----------\n")
+	f:write("-----7----------\n")
+	f:write("------7---------\n")
+	f:write("-------7--------")
+	f:close()
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop2.txt", "w")
+	f:write("---------------7\n")
+	f:write("--------------7-\n")
+	f:write("-------------7--\n")
+	f:write("------------7---\n")
+	f:write("-----------7----\n")
+	f:write("----------7-----\n")
+	f:write("---------7------\n")
+	f:write("--------7-------")
+	f:close()
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop3.txt", "w")
+	f:write("-------7--------\n")
+	f:write("------7---------\n")
+	f:write("-----7----------\n")
+	f:write("----7-----------\n")
+	f:write("---7------------\n")
+	f:write("--7-------------\n")
+	f:write("-7--------------\n")
+	f:write("7---------------")
+	f:close()
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop4.txt", "w")
+	f:write("--------7-------\n")
+	f:write("---------7------\n")
+	f:write("----------7-----\n")
+	f:write("-----------7----\n")
+	f:write("------------7---\n")
+	f:write("-------------7--\n")
+	f:write("--------------7-\n")
+	f:write("---------------7")
+	f:close()
+end
+
+
+
 	-- load autosaves
 	if love.filesystem.getInfo( "game-time.txt" ) == nil then -- first run of game
 		-- create files for the first time
@@ -106,14 +158,8 @@ miscState[6] = ".."
 			f:close()			
 		end
 
-		-- create scene 401 default files for all system types
-		local f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-tempo.txt", "w")
-		f:write(120, "\n")
-		f:write(120, "\n")
-		f:write(120, "\n")
-		f:write(120)
-		f:close()
-
+		restoreDefaults() -- create defaults for the first time
+		
 	else
 		-- read existing files
 		game.time = love.filesystem.read("game-time.txt")
