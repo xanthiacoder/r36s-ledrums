@@ -89,6 +89,26 @@ local helpText = ""
 
 
 
+local function clearLoop(loop)
+
+local j = 1
+local k = 1
+
+for j = 1,8 do
+for k = 1,4 do
+seq.loop[loop].track[j].tick[k].tock = {
+	[1] = "-",
+	[2] = "-",
+	[3] = "-",
+	[4] = "-",
+	}
+end
+end
+
+game.tooltip = "Current loop data cleared."
+end
+
+
 local function saveData()
 
 	local i = 1
@@ -446,7 +466,7 @@ function love.keypressed( key, scancode, isrepeat )
       -- L-Stick UP
       triggerReport = "L-Stick UP pressed"
       lstkState[1] = "dn"
-      saveData() -- testing manual save data
+      clearLoop(currentLoop) -- testing manual clearLoop
    elseif scancode == "left" then
       -- L-Stick LEFT
       triggerReport = "L-Stick LEFT pressed"
@@ -491,24 +511,28 @@ function love.keypressed( key, scancode, isrepeat )
       -- Back L1 pressed
       triggerReport = "Back L1 pressed"
       bbtnState[1] = "dn"
+      saveData()
       currentLoop = 1
       song.tempo = seq.loop[currentLoop].tempo
    elseif scancode == "x" then
       -- Back L2 pressed
       triggerReport = "Back L2 pressed"
       bbtnState[2] = "dn"
+      saveData()
       currentLoop = 2
 	  song.tempo = seq.loop[currentLoop].tempo
    elseif scancode == "r" then
       -- Right R1 pressed
       triggerReport = "Back R1 pressed"
       bbtnState[3] = "dn"
+      saveData()
       currentLoop = 4
       song.tempo = seq.loop[currentLoop].tempo
    elseif scancode == "y" then
       -- Right R2 pressed
       triggerReport = "Back R2 pressed"
       bbtnState[4] = "dn"
+      saveData()
       currentLoop = 3
       song.tempo = seq.loop[currentLoop].tempo
    elseif scancode == "1" then
