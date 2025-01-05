@@ -5,16 +5,75 @@
 -- .draw() for the draw state
 
 
+local sceneNumber = 401
+
+-- music data for this scene
+local seq = {}
+-- define 4 loops
+seq.loop = {
+	[1] = {},
+	[2] = {},
+	[3] = {},
+	[4] = {},
+	}
+-- define 8 tracks
+for i = 1,4 do	
+seq.loop[i].track = {
+	[1] = {},
+	[2] = {},
+	[3] = {},
+	[4] = {},
+	[5] = {},
+	[6] = {},
+	[7] = {},
+	[8] = {},
+	}
+-- define default tempo for each of the 4 loops
+seq.loop[i].tempo = 120
+end
+-- define 4 ticks
+for i = 1,4 do
+for j = 1,8 do
+seq.loop[i].track[j].tick = {
+	[1] = {},
+	[2] = {},
+	[3] = {},
+	[4] = {},
+	}
+end
+end
+-- define 4 tocks
+for i = 1,4 do
+for j = 1,8 do
+for k = 1,4 do
+seq.loop[i].track[j].tick[k].tock = {
+	[1] = "-",
+	[2] = "-",
+	[3] = "-",
+	[4] = "-",
+	}
+end
+end
+end
+
+
 local ledAlpha = {}
 ledAlpha[1] = 1 -- the transparency of 1st led
 ledAlpha[2] = 0 -- the transparency of 2st led
 ledAlpha[3] = 0 -- the transparency of 3st led
 ledAlpha[4] = 0 -- the transparency of 4st led
 
+local currentLoop = 1 -- currently selected loop
+song.tempo = seq.loop[currentLoop].tempo
+
+local trackVolumeMeter = {} -- the volume meter for each track, range 0 .. 100
+for i = 1,8 do
+	trackVolumeMeter[i] = 0
+end
 
 local tickChange = clock.tick -- to tell when the tick has changed
 local tockChange = clock.tock -- to tell when the tock has changed
-local tapTempo = clock.time -- init to detect delta to change tempo
+local tapTempo = love.timer.getTime() -- init to detect delta to change tempo
 
 -- graphical overlay for this scene's help
 local helpTextOverlay = love.graphics.newImage("bgart/transparent-black-50.png")
@@ -27,24 +86,63 @@ local K = {}
 
 local helpText = ""
 
--- K.init is for loading assets for the scene
-function K.init()
-	-- background to display
-	bgart[401] = love.graphics.newImage("bgart/401-hardcore.jpg")
-	-- help text to appear
-	help[401] = ""
-	sfx[1] = love.audio.newSource("sfx/Hardcore-NoizeHit.wav", "static")
-	sfx[2] = love.audio.newSource("sfx/Hardcore-Snare.wav", "static")
-	sfx[3] = love.audio.newSource("sfx/Hardcore-Drum 1.wav", "static")
-	sfx[4] = love.audio.newSource("sfx/Hardcore-Zap.wav", "static")
-	sfx[5] = love.audio.newSource("sfx/Hardcore-Hihat.wav", "static")
-	sfx[6] = love.audio.newSource("sfx/Hardcore-Drum 2.wav", "static")
-	sfx[7] = love.audio.newSource("sfx/Hardcore-Drum 3.wav", "static")
-	sfx[8] = love.audio.newSource("sfx/Hardcore-Cymbal.wav", "static")
+
+
+
+local function saveData()
+	-- using LUA IO to write data for universal compatibility
+	local f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-tempo.txt", "w")
+	f:write(seq.loop[1].tempo, "\n")
+	f:write(seq.loop[2].tempo, "\n")
+	f:write(seq.loop[3].tempo, "\n")
+	f:write(seq.loop[4].tempo)
+	f:close()
+	game.tooltip = "Scene 401 data saved at " .. math.floor(game.time + love.timer.getTime())
 end
 
+
+
+
+-- K.init is for loading assets for the scene (done only once at game load)
+function K.init()
+	-- background to display
+	bgart[sceneNumber] = love.graphics.newImage("bgart/401-hardcore.jpg")
+	-- help text to appear
+	help[sceneNumber] = ""
+	sfx[1] = love.audio.newSource("sfx/Hardcore-NoizeHit.wav", "static")
+	sfx[2] = love.audio.newSource("sfx/Hardcore-Snare.wav", "static")
+	sfx[3] = love.audio.newSource("sfx/Hardcore-Drum1.wav", "static")
+	sfx[4] = love.audio.newSource("sfx/Hardcore-Zap.wav", "static")
+	sfx[5] = love.audio.newSource("sfx/Hardcore-Hihat.wav", "static")
+	sfx[6] = love.audio.newSource("sfx/Hardcore-Drum2.wav", "static")
+	sfx[7] = love.audio.newSource("sfx/Hardcore-Drum3.wav", "static")
+	sfx[8] = love.audio.newSource("sfx/Hardcore-Cymbal.wav", "static")
+	
+end
+
+
+
+-- K.start is to init anything when scene starts, can be reloaded multiple times
+function K.start()
+	-- read all autosave data
+	local f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-tempo.txt")
+	local i = 1
+	for line in f:lines() do
+		seq.loop[i].tempo = line
+		i = i + 1
+	end
+	f:close()
+
+	-- set tempo according to loaded values
+	song.tempo = seq.loop[currentLoop].tempo
+	
+end
+
+
+
+
+-- K.input is for keymapping
 function K.input()
-	-- R36S default Love2d keymapping [start]
 	-- detecting key pressed
 function love.keypressed( key, scancode, isrepeat )
 
@@ -54,48 +152,96 @@ function love.keypressed( key, scancode, isrepeat )
       dpadState[1] = "dn"
       love.audio.stop(sfx[1])
       love.audio.play(sfx[1])
+	  trackVolumeMeter[1] = 70
+      if seq.loop[currentLoop].track[1].tick[clock.tick].tock[clock.tock] == "-" then
+      	seq.loop[currentLoop].track[1].tick[clock.tick].tock[clock.tock] = 7
+	  else
+      	seq.loop[currentLoop].track[1].tick[clock.tick].tock[clock.tock] = "-"
+      end
    elseif scancode == "a" then
       -- D-Pad LEFT pressed
       triggerReport = "D-Pad LEFT pressed"
       dpadState[2] = "dn"
       love.audio.stop(sfx[2])
       love.audio.play(sfx[2])
+	  trackVolumeMeter[2] = 70
+      if seq.loop[currentLoop].track[2].tick[clock.tick].tock[clock.tock] == "-" then
+      	seq.loop[currentLoop].track[2].tick[clock.tick].tock[clock.tock] = 7
+	  else
+      	seq.loop[currentLoop].track[2].tick[clock.tick].tock[clock.tock] = "-"
+      end
    elseif scancode == "s" then
       -- D-Pad DOWN pressed
       triggerReport = "D-Pad DOWN pressed"
       dpadState[3] = "dn"
       love.audio.stop(sfx[3])
       love.audio.play(sfx[3])
+	  trackVolumeMeter[3] = 70
+      if seq.loop[currentLoop].track[3].tick[clock.tick].tock[clock.tock] == "-" then
+      	seq.loop[currentLoop].track[3].tick[clock.tick].tock[clock.tock] = 7
+	  else
+      	seq.loop[currentLoop].track[3].tick[clock.tick].tock[clock.tock] = "-"
+      end
    elseif scancode == "d" then
       -- D-Pad RIGHT pressed
       triggerReport = "D-Pad RIGHT pressed"
       dpadState[4] = "dn"
       love.audio.stop(sfx[4])
       love.audio.play(sfx[4])
+	  trackVolumeMeter[4] = 70
+      if seq.loop[currentLoop].track[4].tick[clock.tick].tock[clock.tock] == "-" then
+      	seq.loop[currentLoop].track[4].tick[clock.tick].tock[clock.tock] = 7
+	  else
+      	seq.loop[currentLoop].track[4].tick[clock.tick].tock[clock.tock] = "-"
+      end
    elseif scancode == "space" then
       -- Button X pressed
       triggerReport = "Button X pressed"
       fbtnState[1] = "dn"
       love.audio.stop(sfx[8])
       love.audio.play(sfx[8])
+	  trackVolumeMeter[8] = 70
+      if seq.loop[currentLoop].track[8].tick[clock.tick].tock[clock.tock] == "-" then
+      	seq.loop[currentLoop].track[8].tick[clock.tick].tock[clock.tock] = 7
+	  else
+      	seq.loop[currentLoop].track[8].tick[clock.tick].tock[clock.tock] = "-"
+      end
    elseif scancode == "b" then
       -- Button Y pressed
       triggerReport = "Button Y pressed"
       fbtnState[2] = "dn"
       love.audio.stop(sfx[5])
       love.audio.play(sfx[5])
+	  trackVolumeMeter[5] = 70
+      if seq.loop[currentLoop].track[5].tick[clock.tick].tock[clock.tock] == "-" then
+      	seq.loop[currentLoop].track[5].tick[clock.tick].tock[clock.tock] = 7
+	  else
+      	seq.loop[currentLoop].track[5].tick[clock.tick].tock[clock.tock] = "-"
+      end
    elseif scancode == "lshift" then
       -- Button B pressed
       triggerReport = "Button B pressed"
       fbtnState[3] = "dn"
       love.audio.stop(sfx[6])
       love.audio.play(sfx[6])
+	  trackVolumeMeter[6] = 70
+      if seq.loop[currentLoop].track[6].tick[clock.tick].tock[clock.tock] == "-" then
+      	seq.loop[currentLoop].track[6].tick[clock.tick].tock[clock.tock] = 7
+	  else
+      	seq.loop[currentLoop].track[6].tick[clock.tick].tock[clock.tock] = "-"
+      end
    elseif scancode == "z" then
       -- Button A pressed
       triggerReport = "Button A pressed"
       fbtnState[4] = "dn"
       love.audio.stop(sfx[7])
       love.audio.play(sfx[7])
+	  trackVolumeMeter[7] = 70
+      if seq.loop[currentLoop].track[7].tick[clock.tick].tock[clock.tock] == "-" then
+      	seq.loop[currentLoop].track[7].tick[clock.tick].tock[clock.tock] = 7
+	  else
+      	seq.loop[currentLoop].track[7].tick[clock.tick].tock[clock.tock] = "-"
+      end
    elseif scancode == "escape" then
       -- SELECT pressed
       triggerReport = "SELECT pressed"
@@ -104,6 +250,20 @@ function love.keypressed( key, scancode, isrepeat )
       -- START pressed
       triggerReport = "START pressed"
       miscState[2] = "dn"
+      if song.playing == false then
+      	song.playing = true
+      	-- start playing tracks
+		for i = 1,8 do
+			if seq.loop[currentLoop].track[i].tick[clock.tick].tock[clock.tock] ~= "-" then
+		      love.audio.stop(sfx[i])
+		      love.audio.play(sfx[i])
+			end
+		end
+      else
+      	song.playing = false
+      	clock.tick = 1
+      	clock.tock = 1
+      end
    elseif scancode == "volumeup" then
       -- VOLUME UP pressed
       triggerReport = "Volume UP pressed"
@@ -116,19 +276,22 @@ function love.keypressed( key, scancode, isrepeat )
       -- L-Stick UP
       triggerReport = "L-Stick UP pressed"
       lstkState[1] = "dn"
+      saveData() -- testing manual save data
    elseif scancode == "left" then
       -- L-Stick LEFT
       triggerReport = "L-Stick LEFT pressed"
       lstkState[2] = "dn"
-      
-	  -- reduce song's tempo
-	  song.tempo = song.tempo - 1
-      
+            
       -- skip to exitscreen scene
       if love.keyboard.isScancodeDown("escape") then  -- SELECT + Lstk-LEFT detected
+      	saveData() -- force scene autosave
       	scene[999].input() -- change input key-map to 999's
       	scene.current = 999 -- change to exitscreen scene
-		scene.previous = 401
+		scene.previous = sceneNumber -- put current scene into scene history
+      else
+		  -- reduce song's tempo
+		seq.loop[currentLoop].tempo = seq.loop[currentLoop].tempo - 1
+		song.tempo = seq.loop[currentLoop].tempo      	
       end
 
    elseif scancode == "down" then
@@ -136,35 +299,48 @@ function love.keypressed( key, scancode, isrepeat )
       triggerReport = "L-Stick DOWN pressed"
       lstkState[3] = "dn"
       -- tapTempo detection
-	  if (clock.time - tapTempo) > 2 then
+	  if (love.timer.getTime() - tapTempo) > 2 then
 		 -- new attempt to tap tempo detected, recalibrate
-	     tapTempo = clock.time
+	     tapTempo = love.timer.getTime()
 	  else
-	     song.tempo = math.floor(60 / (clock.time - tapTempo))
-	     tapTempo = clock.time -- init for the next detection
+		seq.loop[currentLoop].tempo = math.floor(60 / (love.timer.getTime() - tapTempo))
+		song.tempo = seq.loop[currentLoop].tempo
+	    tapTempo = love.timer.getTime() -- init for the next detection
 	  end
    elseif scancode == "right" then
       -- L-Stick RIGHT
       triggerReport = "L-Stick RIGHT pressed"
       lstkState[4] = "dn"
+
 	  -- increase song's tempo
-	  song.tempo = song.tempo + 1
+	seq.loop[currentLoop].tempo = seq.loop[currentLoop].tempo + 1
+	song.tempo = seq.loop[currentLoop].tempo
+
+
    elseif scancode == "l" then
       -- Back L1 pressed
       triggerReport = "Back L1 pressed"
       bbtnState[1] = "dn"
+      currentLoop = 1
+      song.tempo = seq.loop[currentLoop].tempo
    elseif scancode == "x" then
       -- Back L2 pressed
       triggerReport = "Back L2 pressed"
       bbtnState[2] = "dn"
+      currentLoop = 2
+	  song.tempo = seq.loop[currentLoop].tempo
    elseif scancode == "r" then
       -- Right R1 pressed
       triggerReport = "Back R1 pressed"
       bbtnState[3] = "dn"
+      currentLoop = 4
+      song.tempo = seq.loop[currentLoop].tempo
    elseif scancode == "y" then
       -- Right R2 pressed
       triggerReport = "Back R2 pressed"
       bbtnState[4] = "dn"
+      currentLoop = 3
+      song.tempo = seq.loop[currentLoop].tempo
    elseif scancode == "1" then
       -- L-Stick L3 pressed, edit gptokeyb for L3 = "1"
       triggerReport = "L-Stick L3 pressed"
@@ -270,25 +446,57 @@ function love.keyreleased( key, scancode )
   end
 end
 
-
 -- R36S default for R-Stick (mouse) 
 function love.mousemoved( x, y, dx, dy, istouch )
+
 	triggerReport = "x:" .. x .. " y:" .. y .. " dx:" .. dx .. " dy:" .. dy
-	if dy < -1 then
-		rstkState[1] = "ok"
+	if dy < -1 and (mouseCooldown == 0)then
+		rstkState[1] = "ok" -- R-Stick UP
+		mouseCooldown = 15 -- 1/4 second for 60 fps
 	end
-	if dx < -1 then
-		rstkState[2] = "ok"
+	if dx < -1 and (mouseCooldown == 0) then
+		rstkState[2] = "ok" -- R-Stick LEFT
+		mouseCooldown = 15 -- 1/4 second for 60 fps
+		-- Move Track beat selection backwards
+		if (clock.tick * clock.tock) > 1 then
+			clock.tock = clock.tock - 1
+			if clock.tock == 0 then
+				clock.tick = clock.tick - 1
+				clock.tock = 4
+			end
+		else
+			-- do this when at 1.1, cycle to the end
+			clock.tick = 4
+			clock.tock = 4
+		end
 	end
-	if dy > 1 then
-		rstkState[3] = "ok"
+	if dy > 1 and (mouseCooldown == 0) then
+		rstkState[3] = "ok" -- R-Stick DOWN
+		mouseCooldown = 15 -- 1/4 second for 60 fps
 	end
-	if dx > 1 then
-		rstkState[4] = "ok"
+	if dx > 1 and (mouseCooldown == 0) then
+		rstkState[4] = "ok" -- R-Stick RIGHT
+		mouseCooldown = 15 -- 1/4 second for 60 fps
+		-- Move Track beat selection forwards
+		if (clock.tick * clock.tock) < 16 then
+			clock.tock = clock.tock + 1
+			if clock.tock == 5 then
+				clock.tick = clock.tick + 1
+				clock.tock = 1
+			end
+		else
+			-- do this when at 4.4, cycle back to the beginning
+			clock.tick = 1
+			clock.tock = 1
+		end
 	end
 end
 
 end
+
+
+
+
 
 
 -- this scene's update for each frame
@@ -299,17 +507,29 @@ function K.update()
 		ledAlpha[1] = ledAlpha[1] - 0.05
 	end
 
+	-- make trackVolumeMeters fade
+	for i = 1,8 do
+		if trackVolumeMeter[i] > 0 then
+			trackVolumeMeter[i] = trackVolumeMeter[i] - 1
+		end
+	end
+
 	-- do when tick changes
 	if tickChange ~= clock.tick then
 		tickChange = clock.tick -- reset for next change to be detected
-		love.audio.stop(sfx[5]) -- stop to re-trigger sound
-		love.audio.play(sfx[5]) -- play hi-hat sound		
 		ledAlpha[1] = 1 -- pulse 1st LED
 	end
 
 	-- do when tock changes
 	if tockChange ~= clock.tock then
 		tockChange = clock.tock -- reset for next change to be detected
+		for i = 1,8 do
+			if seq.loop[currentLoop].track[i].tick[clock.tick].tock[clock.tock] ~= "-" then
+		      love.audio.stop(sfx[i])
+		      love.audio.play(sfx[i])
+		      trackVolumeMeter[i] = 70
+			end
+		end
 	end
 
 
@@ -319,11 +539,12 @@ end
 
 
 
+
 -- this scene's screen draws go here
 function K.draw()
 	love.graphics.setFont(gameFont)
     if love.keyboard.isScancodeDown("escape") then
-    	helpText = help[401]
+    	helpText = help[sceneNumber]
 		love.graphics.draw(helpTextOverlay, 0, 0) -- draw this scene's helpTextOverlay
 	    love.graphics.printf(helpText, gameFont, 50, 80, 540, "left") -- display help text
 	else
@@ -340,15 +561,48 @@ function K.draw()
 		love.graphics.setColor(1, 1, 1, 1) -- reset alpha
 
     end
+
+	-- display seq data
+    love.graphics.setFont(monoFont)
+    local loopCount = 0
     
-	love.graphics.draw(beatHighlight, 13, 72) -- beat highlight at position 1.1
+	for i = 1,4 do
+	for j = 1,4 do
+		love.graphics.print(seq.loop[currentLoop].track[1].tick[i].tock[j], 180 + (loopCount*8),170) -- draw beat highlight according to tick.tock
+		love.graphics.print(seq.loop[currentLoop].track[2].tick[i].tock[j], 180 + (loopCount*8),180) -- draw beat highlight according to tick.tock
+		love.graphics.print(seq.loop[currentLoop].track[3].tick[i].tock[j], 180 + (loopCount*8),190) -- draw beat highlight according to tick.tock
+		love.graphics.print(seq.loop[currentLoop].track[4].tick[i].tock[j], 180 + (loopCount*8),200) -- draw beat highlight according to tick.tock
+		love.graphics.print(seq.loop[currentLoop].track[5].tick[i].tock[j], 180 + (loopCount*8),210) -- draw beat highlight according to tick.tock
+		love.graphics.print(seq.loop[currentLoop].track[6].tick[i].tock[j], 180 + (loopCount*8),220) -- draw beat highlight according to tick.tock
+		love.graphics.print(seq.loop[currentLoop].track[7].tick[i].tock[j], 180 + (loopCount*8),230) -- draw beat highlight according to tick.tock
+		love.graphics.print(seq.loop[currentLoop].track[8].tick[i].tock[j], 180 + (loopCount*8),240) -- draw beat highlight according to tick.tock
+		loopCount = loopCount + 1
+	end
+	end	
+
+	love.graphics.print("Current loop: " .. currentLoop, 180, 250)
+
+	-- draw track volume meters
+	love.graphics.line(400,300, 400,300-trackVolumeMeter[1])
+	love.graphics.line(404,300, 404,300-trackVolumeMeter[2])
+	love.graphics.line(408,300, 408,300-trackVolumeMeter[3])
+	love.graphics.line(412,300, 412,300-trackVolumeMeter[4])
+	love.graphics.line(416,300, 416,300-trackVolumeMeter[5])
+	love.graphics.line(420,300, 420,300-trackVolumeMeter[6])
+	love.graphics.line(424,300, 424,300-trackVolumeMeter[7])
+	love.graphics.line(428,300, 428,300-trackVolumeMeter[8])
+
+    -- sub-beat = ((clock.tick-1)*4) + clock.tock
+    -- sub-beat - 1 = (((clock.tick-1)*4) + clock.tock) - 1
+    -- spacing = ((((clock.tick-1)*4) + clock.tock) - 1 ) * 38
+    -- padding = (((((clock.tick-1)*4) + clock.tock) - 1 ) * 38 ) + 13
+	love.graphics.draw(beatHighlight, (((((clock.tick-1)*4) + clock.tock) - 1 ) * 38 ) + 13 + ((clock.tick-1)*2), 72) -- draw beat highlight according to tick.tock
 
 	-- checking on ticks and tocks, to match tempo
-	love.graphics.printf(clock.tick .. "." .. clock.tock, bigFont, 270, 240, 100, "center") -- show ticks
+	love.graphics.printf(clock.tick .. "." .. clock.tock, bigFont, 350, 380, 100, "center") -- show ticks
 	
 
 end
 
 
 return K
--- R36S default Love2d keymapping [end]

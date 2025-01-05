@@ -1,5 +1,6 @@
 function love.conf(t)
     t.version = "11.5"                  -- The LÖVE version this game was made for (string)
+--    t.identity = "LEDrums"              -- The identity which is important for save dir
     t.window.title = "Low Entropy Drums"-- The window title (string)
     t.window.width = 640
     t.window.height = 480

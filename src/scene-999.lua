@@ -226,6 +226,25 @@ end
 
 end
 
+
+
+
+
+
+
+-- this scene's update for each frame
+function K.update()
+
+end
+
+
+
+
+
+
+
+
+
 -- this scene's screen draws go here
 function K.draw()
 	love.graphics.setFont(gameFont)
