@@ -8,10 +8,15 @@ Low Entropy Drums for R36S
 * 4 programmable loops
 * Adjustable tempo by tapping
 
-## INSTALL:
+## INSTALL ON R36S:
 * download the .love bundle from https://github.com/xanthiacoder/r36s-ledrums/raw/refs/heads/main/LEDrums.love
 * place the .love bundle in the /love2d/ folder of the ROMS SD Card
 * select LEDrums in Emulation Station to start
+
+## INSTALL ON COMPUTERS:
+* download the .love bundle from https://github.com/xanthiacoder/r36s-ledrums/raw/refs/heads/main/LEDrums.love
+* download the love2d app from https://love2d.org
+* Use the computer keyboard according to the keymap https://github.com/xanthiacoder/r36s-ledrums/blob/main/src/r36s-defaultkeymap.txt
 
 ## CONTROLS:
 * D-pad and Face Buttons to play instruments
