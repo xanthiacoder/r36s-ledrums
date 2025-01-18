@@ -8,6 +8,21 @@
 local sceneNumber = 401
 
 -- music data for this scene
+
+-- filenames of samples to load
+local sample = {
+	[1] = "Hardcore-NoizeHit.wav",
+	[2] = "Hardcore-Snare.wav",
+	[3] = "Hardcore-Drum1.wav",
+	[4] = "Hardcore-Zap.wav",
+	[5] = "Hardcore-Hihat.wav",
+	[6] = "Hardcore-Drum2.wav",
+	[7] = "Hardcore-Drum3.wav",
+	[8] = "Hardcore-Cymbal.wav",
+	}
+
+	
+
 local seq = {}
 -- define 4 loops
 seq.loop = {
@@ -75,12 +90,26 @@ local tickChange = clock.tick -- to tell when the tick has changed
 local tockChange = clock.tock -- to tell when the tock has changed
 local tapTempo = love.timer.getTime() -- init to detect delta to change tempo
 
+
+
 -- graphical overlay for this scene's help
 local helpTextOverlay = love.graphics.newImage("bgart/transparent-black-50.png")
 
 
 -- graphic highlight for beat editor
 local beatHighlight = love.graphics.newImage("pic/beat-highlight.png")
+
+-- graphics for samples triggered display
+local orangeBar = love.graphics.newImage("pic/orange-bar.png")
+
+-- LEDs for indicators
+local greenLED = love.graphics.newImage("pic/green-led.png")
+local greyLED = love.graphics.newImage("pic/grey-led.png")
+
+-- other indicators
+local indicatorHalfTime = love.graphics.newImage("pic/halftime.png")
+local indicatorRec = love.graphics.newImage("pic/rec.png")
+local indicatorPlay = love.graphics.newImage("pic/play.png")
 
 local K = {}
 
@@ -209,14 +238,14 @@ function K.init()
 	bgart[sceneNumber] = love.graphics.newImage("bgart/401-hardcore.jpg")
 	-- help text to appear
 	help[sceneNumber] = ""
-	sfx[1] = love.audio.newSource("sfx/Hardcore-NoizeHit.wav", "static")
-	sfx[2] = love.audio.newSource("sfx/Hardcore-Snare.wav", "static")
-	sfx[3] = love.audio.newSource("sfx/Hardcore-Drum1.wav", "static")
-	sfx[4] = love.audio.newSource("sfx/Hardcore-Zap.wav", "static")
-	sfx[5] = love.audio.newSource("sfx/Hardcore-Hihat.wav", "static")
-	sfx[6] = love.audio.newSource("sfx/Hardcore-Drum2.wav", "static")
-	sfx[7] = love.audio.newSource("sfx/Hardcore-Drum3.wav", "static")
-	sfx[8] = love.audio.newSource("sfx/Hardcore-Cymbal.wav", "static")
+	sfx[1] = love.audio.newSource("sfx/"..sample[1], "static")
+	sfx[2] = love.audio.newSource("sfx/"..sample[2], "static")
+	sfx[3] = love.audio.newSource("sfx/"..sample[3], "static")
+	sfx[4] = love.audio.newSource("sfx/"..sample[4], "static")
+	sfx[5] = love.audio.newSource("sfx/"..sample[5], "static")
+	sfx[6] = love.audio.newSource("sfx/"..sample[6], "static")
+	sfx[7] = love.audio.newSource("sfx/"..sample[7], "static")
+	sfx[8] = love.audio.newSource("sfx/"..sample[8], "static")
 	
 end
 
@@ -342,11 +371,13 @@ function love.keypressed( key, scancode, isrepeat )
       dpadState[1] = "dn"
       love.audio.stop(sfx[1])
       love.audio.play(sfx[1])
-	  trackVolumeMeter[1] = 70
-      if seq.loop[currentLoop].track[1].tick[clock.tick].tock[clock.tock] == "-" then
-      	seq.loop[currentLoop].track[1].tick[clock.tick].tock[clock.tock] = 7
-	  else
-      	seq.loop[currentLoop].track[1].tick[clock.tick].tock[clock.tock] = "-"
+	  trackVolumeMeter[1] = 50
+	  if song.recording then -- write data only if recording mode
+	    if seq.loop[currentLoop].track[1].tick[clock.tick].tock[clock.tock] == "-" then
+			seq.loop[currentLoop].track[1].tick[clock.tick].tock[clock.tock] = 7
+	  	else
+      		seq.loop[currentLoop].track[1].tick[clock.tick].tock[clock.tock] = "-"
+      	end
       end
    elseif scancode == "a" then
       -- D-Pad LEFT pressed
@@ -354,84 +385,98 @@ function love.keypressed( key, scancode, isrepeat )
       dpadState[2] = "dn"
       love.audio.stop(sfx[2])
       love.audio.play(sfx[2])
-	  trackVolumeMeter[2] = 70
-      if seq.loop[currentLoop].track[2].tick[clock.tick].tock[clock.tock] == "-" then
-      	seq.loop[currentLoop].track[2].tick[clock.tick].tock[clock.tock] = 7
-	  else
-      	seq.loop[currentLoop].track[2].tick[clock.tick].tock[clock.tock] = "-"
-      end
+	  trackVolumeMeter[2] = 50
+	  if song.recording then -- write data only if recording mode
+	      if seq.loop[currentLoop].track[2].tick[clock.tick].tock[clock.tock] == "-" then
+	      	seq.loop[currentLoop].track[2].tick[clock.tick].tock[clock.tock] = 7
+		  else
+	      	seq.loop[currentLoop].track[2].tick[clock.tick].tock[clock.tock] = "-"
+	      end
+	  end
    elseif scancode == "s" then
       -- D-Pad DOWN pressed
       triggerReport = "D-Pad DOWN pressed"
       dpadState[3] = "dn"
       love.audio.stop(sfx[3])
       love.audio.play(sfx[3])
-	  trackVolumeMeter[3] = 70
-      if seq.loop[currentLoop].track[3].tick[clock.tick].tock[clock.tock] == "-" then
-      	seq.loop[currentLoop].track[3].tick[clock.tick].tock[clock.tock] = 7
-	  else
-      	seq.loop[currentLoop].track[3].tick[clock.tick].tock[clock.tock] = "-"
-      end
+	  trackVolumeMeter[3] = 50
+	  if song.recording then -- write data only if recording mode
+	      if seq.loop[currentLoop].track[3].tick[clock.tick].tock[clock.tock] == "-" then
+	      	seq.loop[currentLoop].track[3].tick[clock.tick].tock[clock.tock] = 7
+		  else
+	      	seq.loop[currentLoop].track[3].tick[clock.tick].tock[clock.tock] = "-"
+	      end
+	  end
    elseif scancode == "d" then
       -- D-Pad RIGHT pressed
       triggerReport = "D-Pad RIGHT pressed"
       dpadState[4] = "dn"
       love.audio.stop(sfx[4])
       love.audio.play(sfx[4])
-	  trackVolumeMeter[4] = 70
-      if seq.loop[currentLoop].track[4].tick[clock.tick].tock[clock.tock] == "-" then
-      	seq.loop[currentLoop].track[4].tick[clock.tick].tock[clock.tock] = 7
-	  else
-      	seq.loop[currentLoop].track[4].tick[clock.tick].tock[clock.tock] = "-"
-      end
+	  trackVolumeMeter[4] = 50
+	  if song.recording then -- write data only if recording mode
+	      if seq.loop[currentLoop].track[4].tick[clock.tick].tock[clock.tock] == "-" then
+	      	seq.loop[currentLoop].track[4].tick[clock.tick].tock[clock.tock] = 7
+		  else
+	      	seq.loop[currentLoop].track[4].tick[clock.tick].tock[clock.tock] = "-"
+	      end
+	  end
    elseif scancode == "space" then
       -- Button X pressed
       triggerReport = "Button X pressed"
       fbtnState[1] = "dn"
       love.audio.stop(sfx[8])
       love.audio.play(sfx[8])
-	  trackVolumeMeter[8] = 70
-      if seq.loop[currentLoop].track[8].tick[clock.tick].tock[clock.tock] == "-" then
-      	seq.loop[currentLoop].track[8].tick[clock.tick].tock[clock.tock] = 7
-	  else
-      	seq.loop[currentLoop].track[8].tick[clock.tick].tock[clock.tock] = "-"
-      end
+	  trackVolumeMeter[8] = 50
+	  if song.recording then -- write data only if recording mode
+	      if seq.loop[currentLoop].track[8].tick[clock.tick].tock[clock.tock] == "-" then
+	      	seq.loop[currentLoop].track[8].tick[clock.tick].tock[clock.tock] = 7
+		  else
+	      	seq.loop[currentLoop].track[8].tick[clock.tick].tock[clock.tock] = "-"
+	      end
+	  end
    elseif scancode == "b" then
       -- Button Y pressed
       triggerReport = "Button Y pressed"
       fbtnState[2] = "dn"
       love.audio.stop(sfx[5])
       love.audio.play(sfx[5])
-	  trackVolumeMeter[5] = 70
-      if seq.loop[currentLoop].track[5].tick[clock.tick].tock[clock.tock] == "-" then
-      	seq.loop[currentLoop].track[5].tick[clock.tick].tock[clock.tock] = 7
-	  else
-      	seq.loop[currentLoop].track[5].tick[clock.tick].tock[clock.tock] = "-"
-      end
+	  trackVolumeMeter[5] = 50
+	  if song.recording then -- write data only if recording mode
+	      if seq.loop[currentLoop].track[5].tick[clock.tick].tock[clock.tock] == "-" then
+	      	seq.loop[currentLoop].track[5].tick[clock.tick].tock[clock.tock] = 7
+		  else
+	      	seq.loop[currentLoop].track[5].tick[clock.tick].tock[clock.tock] = "-"
+	      end
+	  end
    elseif scancode == "lshift" then
       -- Button B pressed
       triggerReport = "Button B pressed"
       fbtnState[3] = "dn"
       love.audio.stop(sfx[6])
       love.audio.play(sfx[6])
-	  trackVolumeMeter[6] = 70
-      if seq.loop[currentLoop].track[6].tick[clock.tick].tock[clock.tock] == "-" then
-      	seq.loop[currentLoop].track[6].tick[clock.tick].tock[clock.tock] = 7
-	  else
-      	seq.loop[currentLoop].track[6].tick[clock.tick].tock[clock.tock] = "-"
-      end
+	  trackVolumeMeter[6] = 50
+	  if song.recording then -- write data only if recording mode
+	      if seq.loop[currentLoop].track[6].tick[clock.tick].tock[clock.tock] == "-" then
+	      	seq.loop[currentLoop].track[6].tick[clock.tick].tock[clock.tock] = 7
+		  else
+	      	seq.loop[currentLoop].track[6].tick[clock.tick].tock[clock.tock] = "-"
+	      end
+	  end
    elseif scancode == "z" then
       -- Button A pressed
       triggerReport = "Button A pressed"
       fbtnState[4] = "dn"
       love.audio.stop(sfx[7])
       love.audio.play(sfx[7])
-	  trackVolumeMeter[7] = 70
-      if seq.loop[currentLoop].track[7].tick[clock.tick].tock[clock.tock] == "-" then
-      	seq.loop[currentLoop].track[7].tick[clock.tick].tock[clock.tock] = 7
-	  else
-      	seq.loop[currentLoop].track[7].tick[clock.tick].tock[clock.tock] = "-"
-      end
+	  trackVolumeMeter[7] = 50
+	  if song.recording then -- write data only if recording mode
+	      if seq.loop[currentLoop].track[7].tick[clock.tick].tock[clock.tock] == "-" then
+	      	seq.loop[currentLoop].track[7].tick[clock.tick].tock[clock.tock] = 7
+		  else
+	      	seq.loop[currentLoop].track[7].tick[clock.tick].tock[clock.tock] = "-"
+	      end
+	  end
    elseif scancode == "escape" then
       -- SELECT pressed
       triggerReport = "SELECT pressed"
@@ -440,6 +485,10 @@ function love.keypressed( key, scancode, isrepeat )
       -- START pressed
       triggerReport = "START pressed"
       miscState[2] = "dn"
+      clock.tick = 1
+      clock.tock = 1
+      clock.time = love.timer.getTime()
+	  clock.lapTock = clock.time
       if song.playing == false then
       	song.playing = true
       	-- start playing tracks
@@ -451,8 +500,6 @@ function love.keypressed( key, scancode, isrepeat )
 		end
       else
       	song.playing = false
-      	clock.tick = 1
-      	clock.tock = 1
       end
    elseif scancode == "volumeup" then
       -- VOLUME UP pressed
@@ -466,7 +513,11 @@ function love.keypressed( key, scancode, isrepeat )
       -- L-Stick UP
       triggerReport = "L-Stick UP pressed"
       lstkState[1] = "dn"
-      clearLoop(currentLoop) -- testing manual clearLoop
+	  if song.halfTime then
+	  	song.halfTime = false
+	  else
+	  	song.halfTime = true
+	  end
    elseif scancode == "left" then
       -- L-Stick LEFT
       triggerReport = "L-Stick LEFT pressed"
@@ -647,6 +698,14 @@ function love.mousemoved( x, y, dx, dy, istouch )
 	if dy < -1 and (mouseCooldown == 0)then
 		rstkState[1] = "ok" -- R-Stick UP
 		mouseCooldown = 15 -- 1/4 second for 60 fps
+	  -- clear currentLoop
+      if love.keyboard.isScancodeDown("escape") then  -- SELECT + Rstk-UP detected
+			clearLoop(currentLoop)
+      else
+		  -- display instruction for CLEAR
+		  game.tooltip = "Hold SELECT and Right-Stick UP to clear loop"
+      end
+
 	end
 	if dx < -1 and (mouseCooldown == 0) then
 		rstkState[2] = "ok" -- R-Stick LEFT
@@ -667,6 +726,12 @@ function love.mousemoved( x, y, dx, dy, istouch )
 	if dy > 1 and (mouseCooldown == 0) then
 		rstkState[3] = "ok" -- R-Stick DOWN
 		mouseCooldown = 15 -- 1/4 second for 60 fps
+		-- toggle Play/Rec mode
+		if song.recording then
+			song.recording = false
+		else
+			song.recording = true
+		end
 	end
 	if dx > 1 and (mouseCooldown == 0) then
 		rstkState[4] = "ok" -- R-Stick RIGHT
@@ -721,7 +786,7 @@ function K.update()
 			if seq.loop[currentLoop].track[i].tick[clock.tick].tock[clock.tock] ~= "-" then
 		      love.audio.stop(sfx[i])
 		      love.audio.play(sfx[i])
-		      trackVolumeMeter[i] = 70
+		      trackVolumeMeter[i] = 50
 			end
 		end
 	end
@@ -754,49 +819,121 @@ function K.draw()
 --		love.graphics.draw(redLed, 400, 236) -- 4th led, red
 		love.graphics.setColor(1, 1, 1, 1) -- reset alpha
 
+
+		-- display seq data
+		-- seq in graphics bar display
+		for j = 1,8 do -- loop for 8 samples
+		tick = 1
+		tock = 1
+		for i = 1,16 do
+			if (seq.loop[currentLoop].track[j].tick[tick].tock[tock]) ~= "-" then
+				love.graphics.draw(orangeBar, 16 + ((i-1)*38), 72 + ((j-1)*10))
+			end
+			tock = tock + 1
+			if tock == 5 then
+				tick = tick + 1
+				tock = 1
+			end		
+		end
+		end	
+		-- draw dividing lines for bars
+		love.graphics.line(16+(38*4) , 72 , 16+(38*4),72+80)
+		love.graphics.line(16+(38*8) , 72 , 16+(38*8),72+80)
+		love.graphics.line(16+(38*12), 72 , 16+(38*12),72+80)
+
+		-- draw leds for current loop
+		-- draw the grey LEDs first
+		for i = 1,4 do
+			love.graphics.draw(greyLED, 138 + ((i-1)*152), 45)	
+		end
+		-- draw the currentLoop's green LED
+		love.graphics.draw(greenLED, 138 + ((currentLoop-1)*152), 45)	
+
+
+
+		-- seq in text display
+		love.graphics.setFont(monoFont)
+		local loopCount = 0
+    
+		for i = 1,4 do
+		for j = 1,4 do
+			love.graphics.print(seq.loop[currentLoop].track[1].tick[i].tock[j], 334 + (loopCount*8),170) -- draw beat highlight according to tick.tock
+			love.graphics.print(seq.loop[currentLoop].track[2].tick[i].tock[j], 334 + (loopCount*8),180) -- draw beat highlight according to tick.tock
+			love.graphics.print(seq.loop[currentLoop].track[3].tick[i].tock[j], 334 + (loopCount*8),190) -- draw beat highlight according to tick.tock
+			love.graphics.print(seq.loop[currentLoop].track[4].tick[i].tock[j], 334 + (loopCount*8),200) -- draw beat highlight according to tick.tock
+			love.graphics.print(seq.loop[currentLoop].track[5].tick[i].tock[j], 334 + (loopCount*8),210) -- draw beat highlight according to tick.tock
+			love.graphics.print(seq.loop[currentLoop].track[6].tick[i].tock[j], 334 + (loopCount*8),220) -- draw beat highlight according to tick.tock
+			love.graphics.print(seq.loop[currentLoop].track[7].tick[i].tock[j], 334 + (loopCount*8),230) -- draw beat highlight according to tick.tock
+			love.graphics.print(seq.loop[currentLoop].track[8].tick[i].tock[j], 334 + (loopCount*8),240) -- draw beat highlight according to tick.tock
+			loopCount = loopCount + 1
+		end
+		end	
+
+		-- display halfTime toggle
+		love.graphics.print("1/2 Time: " .. tostring(song.halfTime), 334, 250)
+		if song.halfTime then
+			love.graphics.draw(indicatorHalfTime, 210, 340)
+		end
+
+		-- display Play / Rec toggle
+		if song.recording then
+			love.graphics.draw(indicatorRec, 360, 340)
+		else
+			love.graphics.draw(indicatorPlay, 360, 340)
+		end
+		
+
+		-- draw samples loaded
+		love.graphics.print(string.sub(sample[1],1,22), 192, 173)
+		love.graphics.print(string.sub(sample[2],1,22), 192, 190)
+		love.graphics.print(string.sub(sample[3],1,22), 192, 207)
+		love.graphics.print(string.sub(sample[4],1,22), 192, 224)
+		love.graphics.print(string.sub(sample[5],1,22), 192, 241)
+		love.graphics.print(string.sub(sample[6],1,22), 192, 258)
+		love.graphics.print(string.sub(sample[7],1,22), 192, 275)
+		love.graphics.print(string.sub(sample[8],1,22), 192, 292)
+
+		-- draw track volume meters
+		love.graphics.line(430,300, 430,300-trackVolumeMeter[1])
+		love.graphics.line(434,300, 434,300-trackVolumeMeter[2])
+		love.graphics.line(438,300, 438,300-trackVolumeMeter[3])
+		love.graphics.line(442,300, 442,300-trackVolumeMeter[4])
+		love.graphics.line(446,300, 446,300-trackVolumeMeter[5])
+		love.graphics.line(450,300, 450,300-trackVolumeMeter[6])
+		love.graphics.line(454,300, 454,300-trackVolumeMeter[7])
+		love.graphics.line(458,300, 458,300-trackVolumeMeter[8])
+
+
+
+	    -- sub-beat = ((clock.tick-1)*4) + clock.tock
+	    -- sub-beat - 1 = (((clock.tick-1)*4) + clock.tock) - 1
+	    -- spacing = ((((clock.tick-1)*4) + clock.tock) - 1 ) * 38
+	    -- padding = (((((clock.tick-1)*4) + clock.tock) - 1 ) * 38 ) + 13
+		love.graphics.draw(beatHighlight, (((((clock.tick-1)*4) + clock.tock) - 1 ) * 38 ) + 16, 72) -- draw beat highlight according to tick.tock
+
+		-- checking on ticks and tocks, to match tempo
+		love.graphics.printf(clock.tick .. "." .. clock.tock, bigFont, 346, 380, 100, "center") -- show ticks
+
+
+
+		-- display power
+		game.power.state, game.power.percent, game.power.timeleft = love.system.getPowerInfo( )
+		love.graphics.printf(game.power.state .. " " .. game.power.percent .. "%", smallFont, 0, 458, 640, "right") -- show game power
+
+		-- debug printscreen
+		-- display game.system
+		love.graphics.setFont(monoFont)
+		love.graphics.print("System: "..game.system, 334, 280) -- show game system
+		love.graphics.print("Used: "..math.floor(game.time + love.timer.getTime()), 334, 290) -- show game time
+
+
+		-- display game tooltip
+		love.graphics.printf(game.tooltip, smallFont, 0, 458, 640, "left")
+
+
+
     end
 
-	-- display seq data
-    love.graphics.setFont(monoFont)
-    local loopCount = 0
-    
-	for i = 1,4 do
-	for j = 1,4 do
-		love.graphics.print(seq.loop[currentLoop].track[1].tick[i].tock[j], 180 + (loopCount*8),170) -- draw beat highlight according to tick.tock
-		love.graphics.print(seq.loop[currentLoop].track[2].tick[i].tock[j], 180 + (loopCount*8),180) -- draw beat highlight according to tick.tock
-		love.graphics.print(seq.loop[currentLoop].track[3].tick[i].tock[j], 180 + (loopCount*8),190) -- draw beat highlight according to tick.tock
-		love.graphics.print(seq.loop[currentLoop].track[4].tick[i].tock[j], 180 + (loopCount*8),200) -- draw beat highlight according to tick.tock
-		love.graphics.print(seq.loop[currentLoop].track[5].tick[i].tock[j], 180 + (loopCount*8),210) -- draw beat highlight according to tick.tock
-		love.graphics.print(seq.loop[currentLoop].track[6].tick[i].tock[j], 180 + (loopCount*8),220) -- draw beat highlight according to tick.tock
-		love.graphics.print(seq.loop[currentLoop].track[7].tick[i].tock[j], 180 + (loopCount*8),230) -- draw beat highlight according to tick.tock
-		love.graphics.print(seq.loop[currentLoop].track[8].tick[i].tock[j], 180 + (loopCount*8),240) -- draw beat highlight according to tick.tock
-		loopCount = loopCount + 1
-	end
-	end	
-
-	love.graphics.print("Current loop: " .. currentLoop, 180, 250)
-
-	-- draw track volume meters
-	love.graphics.line(400,300, 400,300-trackVolumeMeter[1])
-	love.graphics.line(404,300, 404,300-trackVolumeMeter[2])
-	love.graphics.line(408,300, 408,300-trackVolumeMeter[3])
-	love.graphics.line(412,300, 412,300-trackVolumeMeter[4])
-	love.graphics.line(416,300, 416,300-trackVolumeMeter[5])
-	love.graphics.line(420,300, 420,300-trackVolumeMeter[6])
-	love.graphics.line(424,300, 424,300-trackVolumeMeter[7])
-	love.graphics.line(428,300, 428,300-trackVolumeMeter[8])
-
-    -- sub-beat = ((clock.tick-1)*4) + clock.tock
-    -- sub-beat - 1 = (((clock.tick-1)*4) + clock.tock) - 1
-    -- spacing = ((((clock.tick-1)*4) + clock.tock) - 1 ) * 38
-    -- padding = (((((clock.tick-1)*4) + clock.tock) - 1 ) * 38 ) + 13
-	love.graphics.draw(beatHighlight, (((((clock.tick-1)*4) + clock.tock) - 1 ) * 38 ) + 13 + ((clock.tick-1)*2), 72) -- draw beat highlight according to tick.tock
-
-	-- checking on ticks and tocks, to match tempo
-	love.graphics.printf(clock.tick .. "." .. clock.tock, bigFont, 350, 380, 100, "center") -- show ticks
-	
-
 end
-
 
 return K

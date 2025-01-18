@@ -15,7 +15,8 @@ song = {}
 song.tempo = 120
 
 song.playing = false
-
+song.halfTime = false -- toggle for half tempo
+song.recording = false -- toggle for play/rec mode
 
 -- check for ArkOS / R36S and set game.system, create directories
 game = {} -- table for game data
@@ -125,7 +126,7 @@ function restoreDefaults()
 	f:write("----------------\n")
 	f:write("----------------\n")
 	f:write("----------------\n")
-	f:write("----------------")
+	f:write("---------------7")
 	f:close()
 end
 
@@ -228,6 +229,9 @@ end
 
 -- to make game state changes frame-to-frame
 function love.update(dt)
+
+local tempoMultiplier = 1
+
     frameElapsed = frameElapsed + 1
 
 	-- cooldown when mousemoved
@@ -239,8 +243,14 @@ function love.update(dt)
 	if song.playing == true then
 	    -- get clock.tick and clock.tock to move according to tempo
 	    clock.time = love.timer.getTime()
+	    -- set tempoMultiplier to 1/2 time toggle
+	    if song.halfTime then
+	    	tempoMultiplier = 0.5
+	    else
+	    	tempoMultiplier = 1
+	    end
 		-- check ticks and tocks
-	    if (clock.time - clock.lapTock) >= ((60 / song.tempo)/4) then
+	    if (clock.time - clock.lapTock) >= ((60 / (song.tempo * tempoMultiplier))/4) then
 	    	clock.tock = clock.tock + 1
 	    	clock.lapTock = clock.time -- update lap timer for next tock
 	    	if clock.tock == 5 then
@@ -271,16 +281,7 @@ function love.draw()
 	end
 	scene[scene.current].draw()
 
-	-- display game tooltip
-	love.graphics.printf(game.tooltip, smallFont, 0, 458, 640, "left")
 
-	-- display power
-	game.power.state, game.power.percent, game.power.timeleft = love.system.getPowerInfo( )
-	love.graphics.printf(game.power.state .. " " .. game.power.percent .. "%", smallFont, 0, 458, 640, "right") -- show game power
 
-	-- debug printscreen
-	-- display game.system
-	love.graphics.printf(game.system, monoFont, 0, 280, 640, "center") -- show game power
-	love.graphics.printf(math.floor(game.time + love.timer.getTime()), monoFont, 0, 290, 640, "center") -- show game time
 
 end
