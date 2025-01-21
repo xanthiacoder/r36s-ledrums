@@ -916,10 +916,6 @@ function K.draw()
 
 
 
-		-- display power
-		game.power.state, game.power.percent, game.power.timeleft = love.system.getPowerInfo( )
-		love.graphics.printf(game.power.state .. " " .. game.power.percent .. "%", smallFont, 0, 458, 640, "right") -- show game power
-
 		-- debug printscreen
 		-- display game.system
 		love.graphics.setFont(monoFont)
@@ -929,6 +925,10 @@ function K.draw()
 
 		-- display game tooltip
 		love.graphics.printf(game.tooltip, smallFont, 0, 458, 640, "left")
+
+		-- display power
+		game.power.state, game.power.percent, game.power.timeleft = love.system.getPowerInfo( )
+		love.graphics.printf(game.power.state .. " " .. game.power.percent .. "%", smallFont, 0, 458, 640, "right") -- show game power
 
 
 

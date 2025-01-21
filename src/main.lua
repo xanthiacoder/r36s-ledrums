@@ -56,7 +56,7 @@ clock.lapTock = clock.time
 -- define global variables, used in input detection
 triggerReport = ""
 frameElapsed = 0 -- to check on love.update
-mouseCooldown = 0 -- to prevent mouse input during cooldown period
+mouseCooldown = 0 -- to prevent mouse input during cooldown period (right-stick)
 
 -- input states [start]
 dpadState = {}
@@ -171,12 +171,13 @@ end
 
 -- load scene files here, global as the scenes use them when switching
 scene = {}
+scene[0]   = require "scene-0"   -- Boot Screen
 scene[401] = require "scene-401" -- LEDrums (Hardcore)
 scene[999] = require "scene-999" -- Exitscreen
 
 -- set the 1st scene
-scene.current = 401
-scene.previous = 401
+scene.current = 0
+scene.previous = 0
 
 
 
@@ -196,6 +197,7 @@ function love.load()
 
 
     -- initialise all scenes (does only once at the start)
+    scene[0].init()
 	scene[401].init()
 	scene[999].init()
 end
