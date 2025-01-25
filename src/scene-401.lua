@@ -1,8 +1,12 @@
 -- scene-401
 -- scene name : LEDrums (Hardcore)
 -- scene functions are :
+-- .init() for one-time initialization of stuff
 -- .input() for all the key mapping
+-- .start() to kickstart the scene
+-- .update() for frame by frame activity
 -- .draw() for the draw state
+
 
 
 local sceneNumber = 401
@@ -146,14 +150,20 @@ local function saveData()
 	local tock = 1
 	
 	-- using LUA IO to write data for universal compatibility
-	local f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-tempo.txt", "w")
+	local f = io.open(love.filesystem.getSaveDirectory().."//seqs/"..sceneNumber.."-autosave-tempo.txt", "w")
 	f:write(seq.loop[1].tempo, "\n")
 	f:write(seq.loop[2].tempo, "\n")
 	f:write(seq.loop[3].tempo, "\n")
 	f:write(seq.loop[4].tempo)
 	f:close()
 
-	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop1.txt", "w")
+	-- save sceneNumber
+	f = io.open(love.filesystem.getSaveDirectory().."//autosaves/currentscene.txt", "w")
+	f:write(sceneNumber)
+	f:close()
+
+	-- save loop1 data
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/"..sceneNumber.."-autosave-loop1.txt", "w")
 	for j = 1,8 do
 	tick = 1
 	tock = 1
@@ -171,7 +181,8 @@ local function saveData()
 	end -- end writing all tracks
 	f:close()
 
-	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop2.txt", "w")
+	-- save loop2 data
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/"..sceneNumber.."-autosave-loop2.txt", "w")
 	for j = 1,8 do
 	tick = 1
 	tock = 1
@@ -189,7 +200,8 @@ local function saveData()
 	end -- end writing all tracks
 	f:close()
 
-	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop3.txt", "w")
+	-- save loop3 data
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/"..sceneNumber.."-autosave-loop3.txt", "w")
 	for j = 1,8 do
 	tick = 1
 	tock = 1
@@ -207,7 +219,8 @@ local function saveData()
 	end -- end writing all tracks
 	f:close()
 
-	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop4.txt", "w")
+	-- save loop4 data
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/"..sceneNumber.."-autosave-loop4.txt", "w")
 	for j = 1,8 do
 	tick = 1
 	tock = 1
@@ -225,7 +238,7 @@ local function saveData()
 	end -- end writing all tracks
 	f:close()
 
-	game.tooltip = "Scene 401 data saved at " .. math.floor(game.time + love.timer.getTime())
+	game.tooltip = "Scene "..sceneNumber.." data saved at " .. math.floor(game.time + love.timer.getTime())
 
 end
 
@@ -235,9 +248,18 @@ end
 -- K.init is for loading assets for the scene (done only once at game load)
 function K.init()
 	-- background to display
-	bgart[sceneNumber] = love.graphics.newImage("bgart/401-hardcore.jpg")
+	bgart[sceneNumber] = love.graphics.newImage("bgart/"..sceneNumber..".jpg")
 	-- help text to appear
 	help[sceneNumber] = ""
+	
+end
+
+
+
+-- K.start is to init anything when scene starts, can be reloaded multiple times
+function K.start()
+
+	-- load scene-specific sounds
 	sfx[1] = love.audio.newSource("sfx/"..sample[1], "static")
 	sfx[2] = love.audio.newSource("sfx/"..sample[2], "static")
 	sfx[3] = love.audio.newSource("sfx/"..sample[3], "static")
@@ -246,13 +268,8 @@ function K.init()
 	sfx[6] = love.audio.newSource("sfx/"..sample[6], "static")
 	sfx[7] = love.audio.newSource("sfx/"..sample[7], "static")
 	sfx[8] = love.audio.newSource("sfx/"..sample[8], "static")
-	
-end
 
 
-
--- K.start is to init anything when scene starts, can be reloaded multiple times
-function K.start()
 	local i = 1
 	local j = 1
 	local h = 1
@@ -260,7 +277,7 @@ function K.start()
 	local tock = 1
 	local track = {}
 	-- read all autosave tempo data
-	local f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-tempo.txt")
+	local f = io.input (love.filesystem.getSaveDirectory().."//seqs/"..sceneNumber.."-autosave-tempo.txt")
 	i = 1
 	for line in f:lines() do
 		seq.loop[i].tempo = line
@@ -271,7 +288,7 @@ function K.start()
 	song.tempo = seq.loop[currentLoop].tempo
 
 	-- read all autosave loop data
-	f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop1.txt")
+	f = io.input (love.filesystem.getSaveDirectory().."//seqs/"..sceneNumber.."-autosave-loop1.txt")
 	i = 1
 	for line in f:lines() do
 		track[i] = line
@@ -292,7 +309,7 @@ function K.start()
 	end -- end read of 16 sub-beats
 	end -- end read of 8 tracks
 
-	f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop2.txt")
+	f = io.input (love.filesystem.getSaveDirectory().."//seqs/"..sceneNumber.."-autosave-loop2.txt")
 	i = 1
 	for line in f:lines() do
 		track[i] = line
@@ -313,7 +330,7 @@ function K.start()
 	end -- end read of 16 sub-beats
 	end -- end read of 8 tracks
 
-	f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop3.txt")
+	f = io.input (love.filesystem.getSaveDirectory().."//seqs/"..sceneNumber.."-autosave-loop3.txt")
 	i = 1
 	for line in f:lines() do
 		track[i] = line
@@ -334,7 +351,7 @@ function K.start()
 	end -- end read of 16 sub-beats
 	end -- end read of 8 tracks
 
-	f = io.input (love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop4.txt")
+	f = io.input (love.filesystem.getSaveDirectory().."//seqs/"..sceneNumber.."-autosave-loop4.txt")
 	i = 1
 	for line in f:lines() do
 		track[i] = line
@@ -527,6 +544,7 @@ function love.keypressed( key, scancode, isrepeat )
       if love.keyboard.isScancodeDown("escape") then  -- SELECT + Lstk-LEFT detected
       	saveData() -- force scene autosave
       	scene[999].input() -- change input key-map to 999's
+      	scene[999].start() -- change input key-map to 999's
       	scene.current = 999 -- change to exitscreen scene
 		scene.previous = sceneNumber -- put current scene into scene history
       else
@@ -560,11 +578,11 @@ function love.keypressed( key, scancode, isrepeat )
 
    elseif scancode == "l" then
       -- Back L1 pressed
-      triggerReport = "Back L1 pressed"
-      bbtnState[1] = "dn"
-      saveData()
-      currentLoop = 1
-      song.tempo = seq.loop[currentLoop].tempo
+		if not love.keyboard.isScancodeDown("escape") then -- SELECT not pressed
+			saveData()
+			currentLoop = 1
+			song.tempo = seq.loop[currentLoop].tempo
+		end
    elseif scancode == "x" then
       -- Back L2 pressed
       triggerReport = "Back L2 pressed"
@@ -574,11 +592,11 @@ function love.keypressed( key, scancode, isrepeat )
 	  song.tempo = seq.loop[currentLoop].tempo
    elseif scancode == "r" then
       -- Right R1 pressed
-      triggerReport = "Back R1 pressed"
-      bbtnState[3] = "dn"
-      saveData()
-      currentLoop = 4
-      song.tempo = seq.loop[currentLoop].tempo
+		if not love.keyboard.isScancodeDown("escape") then -- SELECT not pressed
+			saveData()
+			currentLoop = 4
+			song.tempo = seq.loop[currentLoop].tempo
+		end
    elseif scancode == "y" then
       -- Right R2 pressed
       triggerReport = "Back R2 pressed"
@@ -666,16 +684,29 @@ function love.keyreleased( key, scancode )
       lstkState[4] = "up"
    elseif scancode == "l" then
       -- Back L1 released
-      triggerReport = "Back L1 released"
-      bbtnState[1] = "up"
+    	-- move to previous scene 499
+      if love.keyboard.isScancodeDown("escape") then  -- SELECT + L1 release detected
+      	saveData() -- force scene autosave
+      	scene[499].input() -- change input key-map to 499's
+      	scene[499].start() -- run 499 start process
+      	scene.current = 499 -- change to 499 scene
+		scene.previous = sceneNumber -- put current scene into scene history
+      end
+
    elseif scancode == "x" then
       -- Back L2 released
       triggerReport = "Back L2 released"
       bbtnState[2] = "up"
    elseif scancode == "r" then
       -- Right R1 released
-      triggerReport = "Back R1 released"
-      bbtnState[3] = "up"
+    	-- move to next scene 402
+      if love.keyboard.isScancodeDown("escape") then  -- SELECT + R1 release detected
+      	saveData() -- force scene autosave
+      	scene[402].input() -- change input key-map to 402's
+      	scene[402].start() -- run 402 start process
+      	scene.current = 402 -- change to 402 scene
+		scene.previous = sceneNumber -- put current scene into scene history
+      end
    elseif scancode == "y" then
       -- Right R2 released
       triggerReport = "Back R2 released"
@@ -928,7 +959,9 @@ function K.draw()
 
 		-- display power
 		game.power.state, game.power.percent, game.power.timeleft = love.system.getPowerInfo( )
+	if game.system == "R36S" then
 		love.graphics.printf(game.power.state .. " " .. game.power.percent .. "%", smallFont, 0, 458, 640, "right") -- show game power
+	end
 
 
 

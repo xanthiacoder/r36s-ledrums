@@ -26,12 +26,18 @@ if love.filesystem.getUserDirectory( ) == "/home/ark/" then
 	-- user LUA I/O to write
 	os.execute("mkdir " .. love.filesystem.getSaveDirectory()) -- OS creation
 	os.execute("mkdir " .. love.filesystem.getSaveDirectory() .. "//samples")
+	os.execute("mkdir " .. love.filesystem.getSaveDirectory() .. "//samples/wav")
+	os.execute("mkdir " .. love.filesystem.getSaveDirectory() .. "//samples/ogg")
 	os.execute("mkdir " .. love.filesystem.getSaveDirectory() .. "//seqs")
+	os.execute("mkdir " .. love.filesystem.getSaveDirectory() .. "//autosaves")
 
 else
 	game.system = "Others"
 	love.filesystem.createDirectory("samples")
+	love.filesystem.createDirectory("samples/wav")
+	love.filesystem.createDirectory("samples/ogg")
 	love.filesystem.createDirectory("seqs")	
+	love.filesystem.createDirectory("autosaves")	
 end
 
 game.tooltip = "SELECT + LEFT (left stick) : Save and Quit" -- contextual tip at bottom bar
@@ -79,55 +85,68 @@ miscState[6] = ".."
 -- input states [end]
 
 
-
-function restoreDefaults()
-	-- create scene 401 default files for all system types
-	local f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-tempo.txt", "w")
+-- use this to write blank data for scenes
+function resetData(scene)
+	local f = f
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/"..scene.."-autosave-tempo.txt", "w")
 	f:write(120, "\n")
 	f:write(120, "\n")
 	f:write(120, "\n")
 	f:write(120)
 	f:close()
-	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop1.txt", "w")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------")
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/"..scene.."-autosave-loop1.txt", "w")
+	f:write("----------------\n----------------\n----------------\n----------------\n----------------\n----------------\n----------------\n----------------")
+	f:close()	
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/"..scene.."-autosave-loop2.txt", "w")
+	f:write("----------------\n----------------\n----------------\n----------------\n----------------\n----------------\n----------------\n----------------")
+	f:close()	
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/"..scene.."-autosave-loop3.txt", "w")
+	f:write("----------------\n----------------\n----------------\n----------------\n----------------\n----------------\n----------------\n----------------")
+	f:close()	
+	f = io.open(love.filesystem.getSaveDirectory().."//seqs/"..scene.."-autosave-loop4.txt", "w")
+	f:write("----------------\n----------------\n----------------\n----------------\n----------------\n----------------\n----------------\n----------------")
+	f:close()	
+end
+
+function restoreDefaults()
+	local f = f -- used for LUA I/O
+	local i = i
+	
+	-- create autosave files	
+	-- current scene (last scene that was autosaved)
+	f = io.open(love.filesystem.getSaveDirectory().."//autosaves/currentscene.txt", "w")
+	f:write(401)
 	f:close()
-	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop2.txt", "w")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------")
-	f:close()
-	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop3.txt", "w")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------")
-	f:close()
-	f = io.open(love.filesystem.getSaveDirectory().."//seqs/401-autosave-loop4.txt", "w")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("----------------\n")
-	f:write("---------------7")
-	f:close()
+
+	-- create defaults for all scenes
+	resetData(401)
+	resetData(402)
+	resetData(403)
+	resetData(404)
+	resetData(405)
+	resetData(406)
+	resetData(407)
+	resetData(408)
+	resetData(409)
+	resetData(498)
+	resetData(499)
+
+	-- populate samples directory
+	local data = love.filesystem.read("sfx/Speedcore-Drum1.wav")
+	for i = 1,8 do
+		local file = io.open(love.filesystem.getSaveDirectory().."//samples/wav/user"..i..".wav", "w+")
+		file:write(data)
+		file:close()
+	end
+
+	local data = love.filesystem.read("sfx/Speedcore-Drum1.ogg")
+	for i = 1,8 do
+		local file = io.open(love.filesystem.getSaveDirectory().."//samples/ogg/user"..i..".ogg", "w+")
+		file:write(data)
+		file:close()
+	end
+
+
 end
 
 
@@ -136,13 +155,16 @@ end
 	if love.filesystem.getInfo( "game-time.txt" ) == nil then -- first run of game
 		-- create files for the first time
 		game.time = 0
-
+		f = io.open(love.filesystem.getSaveDirectory().."//game-time.txt", "w+")
+		f:write(game.time)
+		f:close()
+	
 		if game.system == "Others" then
 		-- use love2d filesystem write
 			local success, message =love.filesystem.write( "game-time.txt", game.time)
 			if success then 
 				game.tooltip = "Files created on non-ArkOS system"
-				love.filesystem.write( "/samples/lovefs-io.txt", "file write using love2d fs")
+--				love.filesystem.write( "/samples/lovefs-io.txt", "file write using love2d fs")
 			else 
 				game.tooltip = "File not created: " .. message
 			end
@@ -154,9 +176,9 @@ end
 			f:close()
 			game.tooltip = "Files created on ArkOS system"
 			-- test writing into sub-directories
-			f = io.open(love.filesystem.getSaveDirectory().."//samples/lua-io.txt", "w")
-			f:write("file write using lua io")
-			f:close()			
+--			f = io.open(love.filesystem.getSaveDirectory().."//samples/lua-io.txt", "w")
+--			f:write("file write using lua io")
+--			f:close()			
 		end
 
 		restoreDefaults() -- create defaults for the first time
@@ -173,6 +195,16 @@ end
 scene = {}
 scene[0]   = require "scene-0"   -- Boot Screen
 scene[401] = require "scene-401" -- LEDrums (Hardcore)
+scene[402] = require "scene-402" -- LEDrums (Techno)
+scene[403] = require "scene-403" -- LEDrums (Gabber)
+scene[404] = require "scene-404" -- LEDrums (Acid)
+scene[405] = require "scene-405" -- LEDrums (Doomcore)
+scene[406] = require "scene-406" -- LEDrums (Speedcore)
+scene[407] = require "scene-407" -- LEDrums (Slowcore)
+scene[408] = require "scene-408" -- LEDrums (Industrial Madness)
+scene[409] = require "scene-409" -- LEDrums (Drum Jam)
+scene[498] = require "scene-498" -- LEDrums (User - OGG)
+scene[499] = require "scene-499" -- LEDrums (User - WAV)
 scene[999] = require "scene-999" -- Exitscreen
 
 -- set the 1st scene
@@ -199,14 +231,22 @@ function love.load()
     -- initialise all scenes (does only once at the start)
     scene[0].init()
 	scene[401].init()
+	scene[402].init()
+	scene[403].init()
+	scene[404].init()
+	scene[405].init()
+	scene[406].init()
+	scene[407].init()
+	scene[408].init()
+	scene[409].init()
+	scene[498].init()
+	scene[499].init()
 	scene[999].init()
 end
 
 
 -- load 1st scene input schema here
 scene[scene.current].input()
-
-
 -- start 1st scene
 scene[scene.current].start()
 
@@ -282,8 +322,5 @@ function love.draw()
 		love.graphics.draw(bgart[scene.current], 0, 0) -- draw regular scene background
 	end
 	scene[scene.current].draw()
-
-
-
 
 end

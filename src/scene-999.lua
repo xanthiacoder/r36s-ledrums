@@ -1,7 +1,10 @@
--- scene-100
--- scene name : SMPiano
+-- scene-999
+-- scene name : Exit Screen
 -- scene functions are :
+-- .init() for one-time initialization of stuff
 -- .input() for all the key mapping
+-- .start() to kickstart the scene
+-- .update() for frame by frame activity
 -- .draw() for the draw state
 
 
@@ -9,11 +12,18 @@ local K = {}
 
 local helpText = ""
 
+
+-- Scene's entry SFX
+local sceneStartSFX = love.audio.newSource("music/LowEntropy-ExitLoop.ogg", "stream")
+
 -- K.init is for loading assets for the scene
 function K.init()
 	bgart[999] = love.graphics.newImage("bgart/exitscreen.jpg")
 	help[999] = ""
 end
+
+
+
 
 function K.input()
 	-- R36S default Love2d keymapping [start]
@@ -38,21 +48,16 @@ function love.keypressed( key, scancode, isrepeat )
       dpadState[4] = "dn"
    elseif scancode == "space" then
       -- Button X pressed
-      triggerReport = "Button X pressed"
-      fbtnState[1] = "dn"
+		love.event.quit()
    elseif scancode == "b" then
       -- Button Y pressed
-      triggerReport = "Button Y pressed"
-      fbtnState[2] = "dn"
+		love.event.quit()
    elseif scancode == "lshift" then
       -- Button B pressed
-      triggerReport = "Button B pressed"
-      fbtnState[3] = "dn"
+		love.event.quit()
    elseif scancode == "z" then
       -- Button A pressed
-      triggerReport = "Button A pressed"
-      fbtnState[4] = "dn"
-      love.event.quit()
+		love.event.quit()
    elseif scancode == "escape" then
       -- SELECT pressed
       triggerReport = "SELECT pressed"
@@ -228,6 +233,12 @@ end
 
 
 
+-- K.start is to init anything when scene starts, can be reloaded multiple times
+function K.start()
+	love.audio.play(sceneStartSFX)
+end
+
+
 
 
 
@@ -235,6 +246,10 @@ end
 -- this scene's update for each frame
 function K.update()
 
+	-- loop the start track
+	if not sceneStartSFX:isPlaying( ) then
+		love.audio.play( sceneStartSFX )
+	end
 end
 
 

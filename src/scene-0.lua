@@ -6,6 +6,7 @@
 
 
 local sceneNumber = 0
+local autosavedScene = 0
 
 -- graphical overlay for this scene's help
 local helpTextOverlay = love.graphics.newImage("bgart/bootscreen.png")
@@ -31,6 +32,12 @@ function K.init()
 	-- help text to appear
 	help[sceneNumber] = ""
 	game.tooltip = ""
+	
+	-- load autosaved scene (last scene before quit)
+	local f = io.input (love.filesystem.getSaveDirectory().."//autosaves/currentscene.txt")
+	autosavedScene = tonumber(f:read())
+	game.tooltip = ""
+	f:close()
 end
 
 
@@ -111,28 +118,28 @@ function love.keyreleased( key, scancode )
       -- D-Pad RIGHT released
    elseif scancode == "space" then
       -- Button X released
-      scene[401].input() -- change input key-map to 401
-      scene[401].start() -- kickstart the scene
-      scene.current = 401 -- change to scene 401
-	  scene.previous = sceneNumber -- put current scene into scene history
+		scene[autosavedScene].input() -- change input key-map to autosaved scene
+    	scene[autosavedScene].start() -- kickstart the scene
+    	scene.current = autosavedScene -- change to autosaved scene
+		scene.previous = sceneNumber -- put current scene into scene history
    elseif scancode == "b" then
       -- Button Y released
-      scene[401].input() -- change input key-map to 401
-      scene[401].start() -- kickstart the scene
-      scene.current = 401 -- change to scene 401
-	  scene.previous = sceneNumber -- put current scene into scene history
+		scene[autosavedScene].input() -- change input key-map to autosaved scene
+    	scene[autosavedScene].start() -- kickstart the scene
+    	scene.current = autosavedScene -- change to autosaved scene
+		scene.previous = sceneNumber -- put current scene into scene history
    elseif scancode == "lshift" then
       -- Button B released
-      scene[401].input() -- change input key-map to 401
-      scene[401].start() -- kickstart the scene
-      scene.current = 401 -- change to scene 401
-	  scene.previous = sceneNumber -- put current scene into scene history
+		scene[autosavedScene].input() -- change input key-map to autosaved scene
+    	scene[autosavedScene].start() -- kickstart the scene
+    	scene.current = autosavedScene -- change to autosaved scene
+		scene.previous = sceneNumber -- put current scene into scene history
    elseif scancode == "z" then
       -- Button A released
-      scene[401].input() -- change input key-map to 401
-      scene[401].start() -- kickstart the scene
-      scene.current = 401 -- change to scene 401
-	  scene.previous = sceneNumber -- put current scene into scene history
+		scene[autosavedScene].input() -- change input key-map to autosaved scene
+    	scene[autosavedScene].start() -- kickstart the scene
+    	scene.current = autosavedScene -- change to autosaved scene
+		scene.previous = sceneNumber -- put current scene into scene history
    elseif scancode == "escape" then
       -- SELECT released
    elseif scancode == "return" then
@@ -198,11 +205,20 @@ function K.update()
 
 		if resetChargeTime > 500 then
 			game.tooltip = "Reset all data - activated. Default files written."
+			restoreDefaults()
 			resetDone = true
 		end
 
 	else
 		resetChargeTime = 0
+	end
+
+	-- detecting end of audio logo playback
+	if not sceneStartSFX:isPlaying( ) then
+		scene[autosavedScene].input() -- change input key-map to autosaved scene
+    	scene[autosavedScene].start() -- kickstart the scene
+    	scene.current = autosavedScene -- change to autosaved scene
+		scene.previous = sceneNumber -- put current scene into scene history
 	end
 
 end
@@ -224,8 +240,9 @@ function K.draw()
 
 	-- display power
 	game.power.state, game.power.percent, game.power.timeleft = love.system.getPowerInfo( )
-	love.graphics.printf(game.power.state .. " " .. game.power.percent .. "%", smallFont, 0, 458, 640, "right") -- show game power
-
+	if game.system == "R36S" then
+		love.graphics.printf(game.power.state .. " " .. game.power.percent .. "%", smallFont, 0, 458, 640, "right") -- show game power
+	end
 end
 
 
