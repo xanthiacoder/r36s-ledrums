@@ -235,7 +235,8 @@ end
 
 -- K.start is to init anything when scene starts, can be reloaded multiple times
 function K.start()
-	love.audio.play(sceneStartSFX)
+	sceneStartSFX:setLooping(true)
+	sceneStartSFX:play()
 end
 
 
@@ -246,10 +247,6 @@ end
 -- this scene's update for each frame
 function K.update()
 
-	-- loop the start track
-	if not sceneStartSFX:isPlaying( ) then
-		love.audio.play( sceneStartSFX )
-	end
 end
 
 
